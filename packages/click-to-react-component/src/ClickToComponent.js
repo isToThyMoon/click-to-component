@@ -18,10 +18,30 @@ export const State = /** @type {const} */ ({
   SELECT: 'SELECT',
 })
 
+export const JetbrainsProducts = ['idea', 'webstorm', 'phpstorm', 'pycharm']
+
+function extractPathInfo(filePath, projectName) {
+  // Normalize the file path to use forward slashes
+  const normalizedPath = filePath.replace(/\\/g, '/')
+
+  // Split the path by "/projectName/"
+  const [pathBeforeProjectName, pathFromProjectName] = normalizedPath.split(
+    `/${projectName}/`
+  )
+
+  return {
+    pathBeforeProjectName,
+    pathFromProjectName,
+  }
+}
 /**
  * @param {Props} props
  */
-export function ClickToComponent({ editor = 'vscode', pathModifier }) {
+export function ClickToComponent({
+  editor = 'vscode',
+  pathModifier,
+  pathConfig,
+}) {
   const [state, setState] = React.useState(
     /** @type {State[keyof State]} */
     (State.IDLE)
@@ -42,15 +62,48 @@ export function ClickToComponent({ editor = 'vscode', pathModifier }) {
       if (state === State.HOVER && target instanceof HTMLElement) {
         const source = getSourceForElement(target)
         const path = getPathToSource(source, pathModifier)
-        const url = getUrl({
-          editor,
-          pathToSource: path,
-        })
+        console.log('source', source, path)
+        if (editor === 'custom') {
+          if (!pathModifier) {
+            window.alert(
+              'Please use the return value of pathModifier as your custom URL scheme to open your editor.'
+            )
+          }
+          event.preventDefault()
+          window.location.assign(path)
 
-        event.preventDefault()
-        window.location.assign(url)
+          setState(State.IDLE)
+        }
+        if (JetbrainsProducts.includes(editor)) {
+          const projectName = pathConfig.projectName
+          if (!projectName) {
+            window.alert(
+              'please fill in parameter of projectName in pathConfig to use JetbrainsProduct.'
+            )
+            return
+          }
+          const { pathFromProjectName } = extractPathInfo(
+            path,
+            pathConfig.projectName
+          )
+          const url = `jetbrains://${editor}/navigate/reference?project=${pathConfig.projectName}&path=${pathFromProjectName}`
 
-        setState(State.IDLE)
+          event.preventDefault()
+          window.location.assign(url)
+
+          setState(State.IDLE)
+        }
+        if (editor === 'vscode' || editor === 'vscode-insiders') {
+          const url = getUrl({
+            editor,
+            pathToSource: path,
+          })
+
+          event.preventDefault()
+          window.location.assign(url)
+
+          setState(State.IDLE)
+        }
       }
     },
     [editor, state, target]

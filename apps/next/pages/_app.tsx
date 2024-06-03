@@ -6,7 +6,12 @@ import '../styles/globals.css'
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
-      <ClickToComponent editor={process.env.NEXT_PUBLIC_CTC_EDITOR} />
+      <ClickToComponent
+        editor={'idea'}
+        pathConfig={{
+          projectName: 'click-to-component',
+        }}
+      />
       <Component {...pageProps} />
     </>
   )
