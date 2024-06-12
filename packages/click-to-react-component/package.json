@@ -1,8 +1,9 @@
 {
   "type": "module",
   "name": "click-react-component-jump-to-editor",
-  "version": "1.1.1-beta.2",
+  "version": "1.1.1-beta.3",
   "description": "Option+Click your React components in your browser to open the source file in VS Code",
+  "main": "./src/index.js",
   "exports": {
     ".": {
       "types": "./src/types.d.ts",
